@@ -96,20 +96,20 @@ def refine_question_wrt_criteria(question,criteria):
       }
 
 def make_questions_form_jd(jd: str):
-    questions = model.generate_content(f"""
-    You are a AI recrutering assistent. Given the following Job discription generate a list of questions that an interviewer should ask the candidate.
-    Along with questions, provide the grading criteria for each question. ensure that the grading criteria is clear and unambiguous.
-    ```
-    {jd}
-    ```
-    
+  questions = model.generate_content(f"""
+  You are a AI recrutering assistent. Given the following Job discription generate a list of questions that an interviewer should ask the candidate.
+  Along with questions, provide the grading criteria for each question. ensure that the grading criteria is clear and unambiguous.
+  ```
+  {jd}
+  ```
+  
 
-    output json format
-    {{"questions": [
-      {{"question": "question 1", "criteria": "criteria 1"}},
-      {{"question": "question 2", "criteria": "criteria 2"}},
-      ...
-    ]}}
-    """)
-    return ast.literal_eval(questions)
+  output json format
+  {{"questions": [
+    {{"question": "question 1", "criteria": "criteria 1"}},
+    {{"question": "question 2", "criteria": "criteria 2"}},
+    ...
+  ]}}
+  """)
+  return ast.literal_eval(questions)
     
