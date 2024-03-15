@@ -1,22 +1,6 @@
 import re
 import ast
-from google import generativeai as genai
-from dotenv import load_dotenv
-
-load_dotenv()
-# we need temprature as 0 to get consistent results
-temp_0_config = genai.GenerationConfig( **{  
-    # "candidate_count": int | None = None
-    # "stop_sequences": Iterable[str] | None = None
-    # "max_output_tokens": int | None = None
-    "temperature": 0
-    # "top_p": float | None = None
-    # "top_k": int | None = None
-    })
-
-genai.configure()
-
-model = genai.GenerativeModel('gemini-pro')
+from ..gemini.model import model
 
 def judge_answer(q,a,c):
   response = model.generate_content(f"""
@@ -48,7 +32,7 @@ Overall,...
 end your summary with words of Encouragement like good job! or keep up the effort etc.
 do not repeate the inputs in your response
 
-""",generation_config=temp_0_config)
+""")
   return response.text
 
 def refine_question_wrt_criteria(question,criteria):
@@ -59,7 +43,7 @@ def refine_question_wrt_criteria(question,criteria):
 
   do not repeate the input in your response
   """
-  ,generation_config=temp_0_config)
+  )
   # display(Markdown(response.text))
   model_answer = response.text
   judjement = judge_answer(question,model_answer,criteria)
@@ -86,7 +70,7 @@ def refine_question_wrt_criteria(question,criteria):
   ```
   You need to strictly follow the output format.
   '''
-  ,generation_config=temp_0_config)
+  )
   # display(Markdown(response.text))
   # is_fair = re.search(r"your question is (fair|unfair)\.",response.text)
   is_fair = re.search(r"student is being (fairly|unfairly) judged\.",response.text)
@@ -104,7 +88,7 @@ def refine_question_wrt_criteria(question,criteria):
 
       output json format
       {{"alternative questions": ["question 1","question 2",...]}}
-      ''',generation_config=temp_0_config)
+      ''')
       # display(Markdown(response.text))
       # print(response.text)
 
