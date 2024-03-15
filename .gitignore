@@ -1,0 +1,19 @@
+
+# enviornment variables like api kye and such
+.env
+
+# python cache
+__pycache__/
+
+# .~lock files
+.~*
+
+# python env
+.py3/
+.py3/*
+
+# libre office draw files
+*.odg
+
+# research papers
+research/

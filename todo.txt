@@ -1,0 +1,18 @@
+1. pipeline for question generation based on JD
+2. question generation
+    a. UI
+        i.  HTML --done
+        ii. JS
+    b. Backend api
+        i.  model code
+        ii. api
+3. chat interview
+    a. UI
+    b. Backend api
+4. Add speech to text inside ui for chat interview
+5. testing and stuff
+
+
+other features like q and a using document and such will come later
+NO NEW FEATURE IN THE MIDDLE AHHHHHH..........
+
