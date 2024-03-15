@@ -38,18 +38,25 @@ function display_questions(questions_json) {
         question.id = `question_${i+1}`;
         question.setAttribute("rows", "4");
         question.setAttribute("cols", "50");
-        
+
         var criteria = document.createElement("textarea");
         criteria.className = "criteria";
         criteria.id = `criteria_${i+1}`;
         criteria.setAttribute("rows", "4");
         criteria.setAttribute("cols", "50");
 
-        question.innerText = `question ${i+1}: ` +  questions[i].question;
-        criteria.innerText = `criteria ${i+1}: ` +  questions[i].criteria;
+        question.innerText = questions[i].question;
+        criteria.innerText = questions[i].criteria;
+
+        question_no = document.createElement("h3");
+        question_no.innerText = `Question ${i+1}`;
+
+        question_n_criteria.appendChild(question_no);
         question_n_criteria.appendChild(question);
         question_n_criteria.appendChild(criteria);
 
         question_div.appendChild(question_n_criteria);
     }
 }
+
+// save questions to database
