@@ -4,35 +4,35 @@ from ..gemini.model import model
 
 def judge_answer(q,a,c):
   response = model.generate_content(f"""
-you are a teaching assistent ai who will help students correct their answers.
+  you are a teaching assistent ai who will help students correct their answers.
 
-for a given question, criteria and student answer tell the student what they did correct and where they have to improve their understanding of the subject.
+  for a given question, criteria and student answer tell the student what they did correct and where they have to improve their understanding of the subject.
 
-input:
-```
-question: {q}
-criteria: {c}
-student answer: {a}
+  input:
+  ```
+  question: {q}
+  criteria: {c}
+  student answer: {a}
 
-output format
-```
-Correct points:
-1.
-2.
-...
-Points to improve:
-1.
-2.
-...
+  output format
+  ```
+  Correct points:
+  1.
+  2.
+  ...
+  Points to improve:
+  1.
+  2.
+  ...
 
-summery:
-Overall,...
-```
+  summery:
+  Overall,...
+  ```
 
-end your summary with words of Encouragement like good job! or keep up the effort etc.
-do not repeate the inputs in your response
+  end your summary with words of Encouragement like good job! or keep up the effort etc.
+  do not repeate the inputs in your response
 
-""")
+  """)
   return response.text
 
 def refine_question_wrt_criteria(question,criteria):
@@ -71,8 +71,7 @@ def refine_question_wrt_criteria(question,criteria):
   You need to strictly follow the output format.
   '''
   )
-  # display(Markdown(response.text))
-  # is_fair = re.search(r"your question is (fair|unfair)\.",response.text)
+
   is_fair = re.search(r"student is being (fairly|unfairly) judged\.",response.text)
   if is_fair is not None and is_fair[1].lower() == "unfairly":
       response = model.generate_content(f'''
@@ -89,11 +88,28 @@ def refine_question_wrt_criteria(question,criteria):
       output json format
       {{"alternative questions": ["question 1","question 2",...]}}
       ''')
-      # display(Markdown(response.text))
-      # print(response.text)
 
       return ast.literal_eval(response.text)
   else:
       return {
         "alternative questions": []
       }
+
+def make_questions_form_jd(jd: str):
+    questions = model.generate_content(f"""
+    You are a AI recrutering assistent. Given the following Job discription generate a list of questions that an interviewer should ask the candidate.
+    Along with questions, provide the grading criteria for each question. ensure that the grading criteria is clear and unambiguous.
+    ```
+    {jd}
+    ```
+    
+
+    output json format
+    {{"questions": [
+      {{"question": "question 1", "criteria": "criteria 1"}},
+      {{"question": "question 2", "criteria": "criteria 2"}},
+      ...
+    ]}}
+    """)
+    return ast.literal_eval(questions)
+    
