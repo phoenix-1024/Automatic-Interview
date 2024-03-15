@@ -4,8 +4,8 @@
         i.  HTML --done
         ii. JS
     b. Backend api
-        i.  model code
-        ii. api
+        i.  model code --done
+        ii. api --done
 3. chat interview
     a. UI
     b. Backend api

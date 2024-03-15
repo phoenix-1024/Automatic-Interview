@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class model:
+class gemini_model:
     temp_0_config = genai.GenerationConfig( **{  
         # "candidate_count": int | None = None
         # "stop_sequences": Iterable[str] | None = None
@@ -17,6 +17,8 @@ class model:
     genai.configure()
 
     genai_model = genai.GenerativeModel('gemini-pro')
+    def __init__(self) -> None:
+        pass
 
     def generate_content(self, content,**kwargs):
         if len(kwargs) == 0:
@@ -26,3 +28,4 @@ class model:
             response = self.genai_model.generate_content(content,generation_config=config)
 
         return response.text
+model = gemini_model()

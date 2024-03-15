@@ -1,5 +1,6 @@
 import re
 import ast
+import json
 from ..gemini.model import model
 
 def judge_answer(q,a,c):
@@ -105,11 +106,20 @@ def make_questions_form_jd(jd: str):
   
 
   output json format
+  ```json
   {{"questions": [
     {{"question": "question 1", "criteria": "criteria 1"}},
     {{"question": "question 2", "criteria": "criteria 2"}},
     ...
   ]}}
+  ```
   """)
-  return ast.literal_eval(questions)
+  # Extract the JSON part from the string
+  json_str = re.search(r'```json\n(.*)\n```', questions, re.DOTALL).group(1)
+
+  # Parse the JSON string into a Python dictionary
+  data = json.loads(json_str)
+
+  print(data)
+  return questions
     

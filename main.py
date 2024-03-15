@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("generate_questions/")
+@app.post("/generate_questions")
 def generate_questions(jd: jd_input):
     return make_questions_form_jd(jd.job_discription)
     
