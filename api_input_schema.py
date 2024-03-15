@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class JD(BaseModel):
+class jd_input(BaseModel):
     job_discription: str
