@@ -100,6 +100,9 @@ def make_questions_form_jd(jd: str):
   questions = model.generate_content(f"""
   You are a AI recrutering assistent. Given the following Job discription generate a list of questions that an interviewer should ask the candidate.
   Along with questions, provide the grading criteria for each question. ensure that the grading criteria is clear and unambiguous.
+  eg. 
+  question: What are the components and structure of a molecule of DNA?
+  criteria: 1. described the double helix structure of DNA. 2. described the components of DNA. 3. mentioned that the base pairs bind using hydrogen bond.
   ```
   {jd}
   ```
@@ -113,13 +116,13 @@ def make_questions_form_jd(jd: str):
     ...
   ]}}
   ```
+  questions and criteria should be text only.
   """)
   # Extract the JSON part from the string
-  json_str = re.search(r'```json\n(.*)\n```', questions, re.DOTALL).group(1)
+  json_str = re.search(r'```json\n(.*)\n```', questions, re.DOTALL)[1]
 
   # Parse the JSON string into a Python dictionary
   data = json.loads(json_str)
 
-  print(data)
-  return questions
-    
+  # print(data)
+  return data

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.q_and_a.QA import make_questions_form_jd
 from api_input_schema import jd_input
+from functools import lru_cache
 
 app = FastAPI()
 
@@ -13,7 +14,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,5 +22,6 @@ app.add_middleware(
 
 @app.post("/generate_questions")
 def generate_questions(jd: jd_input):
+
     return make_questions_form_jd(jd.job_discription)
     
