@@ -17,3 +17,6 @@ __pycache__/
 
 # research papers
 research/
+
+# database files
+*.db

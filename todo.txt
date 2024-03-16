@@ -17,3 +17,8 @@
 other features like q and a using document and such will come later
 NO NEW FEATURE IN THE MIDDLE AHHHHHH..........
 
+next steps:
+evaluation pipeline
+optimization
+finetuning??
+

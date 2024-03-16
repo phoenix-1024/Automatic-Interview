@@ -28,6 +28,11 @@ button {
     text-transform: uppercase;
 }
 
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
 button:hover {
     background-color: #666;
 }
