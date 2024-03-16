@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Create an SQLite database engine
-engine = create_engine('sqlite:///my_database.db', echo=True)  # "echo=True" enables logging
+engine = create_engine('sqlite:///my_database.db')  # "echo=True" enables logging
 
 # Create a base class for our ORM models
 Base = declarative_base()

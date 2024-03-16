@@ -1,0 +1,47 @@
+<head>
+    <script>
+        window.onload = function() {
+            // Your JavaScript function here
+            get_jobs();
+        };
+
+        function get_jobs() {
+            fetch('http://localhost:8000/jobs')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    let jobs = data['jobs'];
+                    let jobs_list = document.getElementById('jobs list');
+                    jobs_list.innerHTML = '';
+                    for (let i = 0; i < jobs.length; i++) {
+                        let job = jobs[i];
+                        let job_div = document.createElement('div');
+                        job_div.innerHTML = `
+                            <h2>${job['job_title']}</h2>
+                            <p>${job['job_discription']}</p>
+                            <button onclick="select_job(${job['id']})">Select</button>
+                        `;
+                        jobs_list.appendChild(job_div);
+                    }
+                });
+        }
+
+        function select_job(job_id) {
+            console.log(job_id);
+            // window.location.href = `http://localhost:8000/que_gen.html?job_id=${job_id}`;
+        }
+    </script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+
+<body>
+    <div>
+        <h1>
+            Job selection screen
+        </h1>
+    </div>
+    <button id="reload" onclick="get_jobs()">Reload</button>
+    <div id="jobs list">
+    </div>
+</body>

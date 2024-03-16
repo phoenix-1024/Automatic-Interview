@@ -30,6 +30,16 @@ def generate_questions(jd: jd_input):
 
 @app.post("/save_questions")
 def save_questions(questions: questions_input,db = Depends(get_db)):
-    db.add(Questions(job_title=questions.job_title, questions=questions.questions))
+    db.add(Questions(
+        job_title=questions.job_title,
+        job_discription=questions.job_discription,
+        questions=questions.questions))
     db.commit()
     return {"status": "success"}
+
+@app.get("/jobs")
+def get_jobs(db = Depends(get_db)):
+    jobs = db.query(Questions).all()
+    jobs = [{"job_title": job.job_title, "job_discription": job.job_discription} for job in jobs]
+    # print(jobs)
+    return {"jobs": jobs}

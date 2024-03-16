@@ -2,13 +2,14 @@
 2. question generation
     a. UI
         i.  HTML --done
-        ii. JS 
+        ii. JS --done
     b. Backend api
         i.  model code --done
         ii. api --done
-        iii.db setup 
+        iii.db setup --done
 3. chat interview
-    a. UI
+    a. UI select job page
+    a. UI chat
     b. Backend api
 4. Add speech to text inside ui for chat interview
 5. testing and stuff
