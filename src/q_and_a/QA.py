@@ -117,7 +117,7 @@ def make_questions_form_jd(jd: str):
   ]}}
   ```
   questions and criteria should be text only.
-  """)
+  """,temperature=0.75)
   # Extract the JSON part from the string
   json_str = re.search(r'```json\n(.*)\n```', questions, re.DOTALL)[1]
 
