@@ -115,7 +115,7 @@ function save_questions() {
         var criteria = question_n_criteria[i].getElementsByClassName("criteria")[0].value;
         questions.push({ question: question, criteria: criteria });
     }
-    fetch('http://localhost:8000/save_questions', {
+    fetch('http://localhost:8000/save_job', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

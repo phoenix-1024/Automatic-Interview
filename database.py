@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, JSON
+from sqlalchemy import create_engine, Column, Integer, String, JSON, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -9,13 +9,23 @@ engine = create_engine('sqlite:///my_database.db')  # "echo=True" enables loggin
 Base = declarative_base()
 
 # Define a model class
-class Questions(Base):
-    __tablename__ = 'users'
+class Job(Base):
+    __tablename__ = 'job'
 
-    id = Column(Integer, primary_key=True)
+    job_id = Column(Integer, primary_key=True)
     job_title = Column(String)
     job_discription = Column(String)
     questions = Column(JSON)
+
+class Questions(Base):
+    __tablename__ = "questions"
+
+    qid = Column(Integer, primary_key=True)
+    # setting ondelete cascade to delete all questions if a job is deleted
+    job_id = ForeignKey(Job.job_id, ondelete="CASCADE")
+    question = Column(String)
+    criteria = Column(String)
+
 
 # Create the database tables
 Base.metadata.create_all(engine)
