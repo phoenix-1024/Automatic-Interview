@@ -28,6 +28,10 @@ button {
     text-transform: uppercase;
 }
 
+.delete_button {
+    background-color: #ff0000;
+}
+
 button:disabled {
     background-color: #666;
     cursor: not-allowed;

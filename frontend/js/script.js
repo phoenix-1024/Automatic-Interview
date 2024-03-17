@@ -30,36 +30,68 @@ function generate_questions() {
 
 function display_questions(questions_json) {
     var questions = questions_json.questions;
-    var question_div = document.getElementById("questions");
-    question_div.innerHTML = "";
-    for (var i = 0; i < questions.length; i++) {
-        var question_n_criteria = document.createElement("div");
-        question_n_criteria.className = "question_n_criteria";
-        
-        var question = document.createElement("textarea");
-        question.className = "question";
-        question.id = `question_${i+1}`;
-        question.setAttribute("rows", "4");
-        question.setAttribute("cols", "50");
-
-        var criteria = document.createElement("textarea");
-        criteria.className = "criteria";
-        criteria.id = `criteria_${i+1}`;
-        criteria.setAttribute("rows", "4");
-        criteria.setAttribute("cols", "50");
-
-        question.innerText = questions[i].question;
-        criteria.innerText = questions[i].criteria;
-
-        question_no = document.createElement("h3");
-        question_no.innerText = `Question ${i+1}`;
-
-        question_n_criteria.appendChild(question_no);
-        question_n_criteria.appendChild(question);
-        question_n_criteria.appendChild(criteria);
-
-        question_div.appendChild(question_n_criteria);
+    
+    for (let i = 0; i < questions.length; i++) {
+        add_question(questions[i]["question"], questions[i]["criteria"])
     }
+}
+
+function clear_all_questions() {
+    document.getElementById("questions").innerHTML = "";
+    // disable save button 
+    document.getElementById("save_questions").disabled = true;
+}
+
+function disable_save_button_if_no_questions() {
+    var question_div = document.getElementById("questions");
+    var question_n_criteria = question_div.getElementsByClassName("question_n_criteria");
+    if (question_n_criteria.length == 0) {
+        document.getElementById("save_questions").disabled = true;
+    }
+}
+
+function add_question(question_text = '', criteria_text = '') {
+    var question_div = document.getElementById("questions");
+
+    let question_n_criteria = document.createElement("div");
+    question_n_criteria.className = "question_n_criteria";
+        
+    var question = document.createElement("textarea");
+    question.className = "question";
+    // question.id = `question_${i+1}`;
+    question.setAttribute("rows", "4");
+    question.setAttribute("cols", "50");
+
+    var criteria = document.createElement("textarea");
+    criteria.className = "criteria";
+    // criteria.id = `criteria_${i+1}`;
+    criteria.setAttribute("rows", "4");
+    criteria.setAttribute("cols", "50");
+
+    question.innerText = question_text;
+    criteria.innerText = criteria_text;
+
+    // question_no = document.createElement("h3");
+    // question_no.innerText = `Question ${i+1}`;
+
+    delete_button = document.createElement("button");
+    delete_button.className = "delete_button";
+    delete_button.innerText = "Delete";
+    delete_button.addEventListener("click", function() {
+        question_n_criteria.remove();
+        disable_save_button_if_no_questions();
+    });
+    // console.log("added delete button")
+
+    // question_n_criteria.appendChild(question_no);
+    question_n_criteria.appendChild(delete_button);
+    question_n_criteria.appendChild(question);
+    question_n_criteria.appendChild(criteria);
+
+    question_div.appendChild(question_n_criteria);
+
+    // enable save button
+    document.getElementById("save_questions").disabled = false;
 }
 
 // save questions to database
