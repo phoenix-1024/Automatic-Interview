@@ -1,12 +1,16 @@
+
+import argparse
+
 from google.cloud import speech
 
 
-
+# [START speech_transcribe_streaming]
 def transcribe_streaming(stream_file: str) -> speech.RecognitionConfig:
     """Streams transcription of the given audio file."""
 
     client = speech.SpeechClient()
 
+    # [START speech_python_migration_streaming_request]
     with open(stream_file, "rb") as audio_file:
         content = audio_file.read()
 
@@ -18,18 +22,20 @@ def transcribe_streaming(stream_file: str) -> speech.RecognitionConfig:
     )
 
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
+        encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
+        sample_rate_hertz=48000,
         language_code="en-US",
     )
 
     streaming_config = speech.StreamingRecognitionConfig(config=config)
 
     # streaming_recognize returns a generator.
+    # [START speech_python_migration_streaming_response]
     responses = client.streaming_recognize(
         config=streaming_config,
         requests=requests,
     )
+    # [END speech_python_migration_streaming_request]
 
     for response in responses:
         # Once the transcription has settled, the first result will contain the
@@ -44,5 +50,16 @@ def transcribe_streaming(stream_file: str) -> speech.RecognitionConfig:
                 print(f"Confidence: {alternative.confidence}")
                 print(f"Transcript: {alternative.transcript}")
 
+    # [END speech_python_migration_streaming_response]
+
+
+# [END speech_transcribe_streaming]
+
+
 if __name__ == "__main__":
-    transcribe_streaming("sample_audio")
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("stream", help="File to stream to the API")
+    args = parser.parse_args()
+    transcribe_streaming(args.stream)

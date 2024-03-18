@@ -20,3 +20,6 @@ research/
 
 # database files
 *.db
+
+# audio files
+temp/

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 # from functools import lru_cache
@@ -10,6 +10,10 @@ import time
 from src.q_and_a.QA import make_questions_form_jd
 from api_input_schema import jd_input, questions_input
 from database import get_db, Questions, Job
+# from src.speach_to_text.my_s2t import My_Transcriber, websocketStream
+from src.speach_to_text.transcribe_streaming import start_transcribing
+import os
+from google.cloud import speech_v1, speech
 # from frontend_router import router
 
 app = FastAPI()
@@ -114,3 +118,56 @@ def get_question_by_id(job_id: int, qid: int, db: Session = Depends(get_db)):
         .one()
     return {"question": question.question, "criteria": question.criteria}
 
+
+
+@app.websocket("/speech_to_text")
+async def speech_to_text(websocket: WebSocket):
+    await websocket.accept()
+
+    print("connected")
+    try:
+
+        stream = await start_transcribing(websocket.iter_bytes())
+        try:
+            async for response in stream:
+                # Once the transcription has settled, the first result will contain the
+                # is_final result. The other results will be for subsequent portions of
+                # the audio.
+                text_list = []
+                for result in response.results:
+                    print(f"Finished: {result.is_final}")
+                    print(f"Stability: {result.stability}")
+                    alternatives = result.alternatives
+                    # The alternatives are ordered from most likely to least.
+                    for alternative in alternatives:
+                        print(f"Confidence: {alternative.confidence}")
+                        print(f"Transcript: {alternative.transcript}")
+                        text_list.append(alternative.transcript)
+
+                await websocket.send_text(" ".join(text_list))
+        except Exception as e:
+            print("Error while processing stream: " + str(e))
+            
+    except Exception as e:
+        print("Error in speech_to_text: " + str(e))
+        print("disconnected")
+    finally:
+        print("disconnected")
+        await websocket.close()
+        # print("disconnected")
+
+def save_audio(data: bytes,filename: str):
+    # Specify the directory to save the audio files
+    save_dir = "temp"
+    # Generate a unique filename for the audio file
+    # filename = generate_filename()
+    # Save the audio data to a file
+    print(filename)
+    with open(os.path.join(save_dir, filename), "ab") as f:
+        f.write(data)
+
+def generate_filename():
+    # Generate a unique filename for the audio file
+    timestamp = int(time.time())
+    filename = f"audio_{timestamp}.webm"
+    return filename
