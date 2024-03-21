@@ -32,6 +32,26 @@ button {
     background-color: #ff0000;
 }
 
+#recButton {
+	width: 35px;
+	height: 35px;
+	font-size: 0;
+	background-color: red;
+	border: 0;
+	border-radius: 35px;
+	margin: 18px;
+	outline: none;
+}
+
+.not_recording {
+    background-color: darkred;
+}
+
+.recording {
+    background-color: green;
+}
+
+
 button:disabled {
     background-color: #666;
     cursor: not-allowed;

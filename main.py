@@ -13,7 +13,9 @@ from database import get_db, Questions, Job
 # from src.speach_to_text.my_s2t import My_Transcriber, websocketStream
 from src.speach_to_text.transcribe_streaming import start_transcribing
 import os
+import asyncio
 from google.cloud import speech_v1, speech
+from google.api_core.exceptions import OutOfRange
 # from frontend_router import router
 
 app = FastAPI()
@@ -119,6 +121,28 @@ def get_question_by_id(job_id: int, qid: int, db: Session = Depends(get_db)):
     return {"question": question.question, "criteria": question.criteria}
 
 
+async def my_web_socket_itrator(websocket: WebSocket):
+    while True:
+        try:
+            data = await websocket.receive()
+            # print(data.keys())
+            if 'text' in data.keys():
+                if data['text'] == "stop":
+                    print("stopping speech to text")
+                    break
+                else:
+                    print("Received text: ", data['text'])
+            elif 'bytes' in data.keys():
+                print("Received bytes")
+                yield data['bytes']
+            else:
+                print(data.keys())
+                print(data['type'])
+
+        except Exception as e:
+            print("Error in my_web_socket_itrator: " + str(e),type(e))
+            break
+
 
 @app.websocket("/speech_to_text")
 async def speech_to_text(websocket: WebSocket):
@@ -126,30 +150,32 @@ async def speech_to_text(websocket: WebSocket):
 
     print("connected")
     try:
+         
+        while True:
+            signal_data = await websocket.receive()
+            # signal_data = await websocket.receive()
+            if 'text' in signal_data.keys() and  signal_data['text'] == "start":
+                print("starting speech to text")
+                stream = await start_transcribing(my_web_socket_itrator(websocket))
+                async for response in stream:
+                    # Once the transcription has settled, the first result will contain the
+                    # is_final result. The other results will be for subsequent portions of
+                    # the audio.
+                    text_list = []
+                    print(response.__dict__)
+                    for result in response.results:
+                        print(f"Finished: {result.is_final}")
+                        print(f"Stability: {result.stability}")
+                        alternatives = result.alternatives
+                        # The alternatives are ordered from most likely to least.
+                        for alternative in alternatives:
+                            print(f"Confidence: {alternative.confidence}")
+                            print(f"Transcript: {alternative.transcript}")
+                            text_list.append(alternative.transcript)
 
-        stream = await start_transcribing(websocket.iter_bytes())
-        try:
-            async for response in stream:
-                # Once the transcription has settled, the first result will contain the
-                # is_final result. The other results will be for subsequent portions of
-                # the audio.
-                text_list = []
-                for result in response.results:
-                    print(f"Finished: {result.is_final}")
-                    print(f"Stability: {result.stability}")
-                    alternatives = result.alternatives
-                    # The alternatives are ordered from most likely to least.
-                    for alternative in alternatives:
-                        print(f"Confidence: {alternative.confidence}")
-                        print(f"Transcript: {alternative.transcript}")
-                        text_list.append(alternative.transcript)
-
-                await websocket.send_text(" ".join(text_list))
-        except Exception as e:
-            print("Error while processing stream: " + str(e))
-            
+                    await websocket.send_text(" ".join(text_list))
     except Exception as e:
-        print("Error in speech_to_text: " + str(e))
+        print("Error in speech_to_text: " + str(e),type(e))
         print("disconnected")
     finally:
         print("disconnected")

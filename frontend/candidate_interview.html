@@ -1,5 +1,6 @@
 <head>
     <script src="/static/js/candidate_interview.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 
@@ -16,6 +17,7 @@
         <textarea name="answer" id="answer" cols="30" rows="10"></textarea>
     </div>
     <div>
+        <button id='recButton' class="not_recording" onclick="toggleSpeechToText()" >Speech to Text</button>
         <button id="send answer" onclick="send_answer()">Send</button>
     </div>
     
