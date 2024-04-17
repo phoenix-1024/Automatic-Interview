@@ -22,7 +22,7 @@ class Questions(Base):
 
     qid = Column(Integer, primary_key=True)
     # setting ondelete cascade to delete all questions if a job is deleted
-    job_id = ForeignKey(Job.job_id, ondelete="CASCADE")
+    job_id = Column(Integer, ForeignKey(Job.job_id,ondelete="CASCADE"), nullable = False)
     question = Column(String)
     criteria = Column(String)
 

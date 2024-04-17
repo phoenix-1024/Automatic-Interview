@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 import time
 
 from src.q_and_a.QA import make_questions_form_jd
@@ -75,7 +76,7 @@ def save_questions(questions: questions_input,db: Session = Depends(get_db)):
             criteria=question["criteria"]
         ))
     
-    db.commit()
+        db.commit()
 
 
     return {"status": "success"}
@@ -106,12 +107,18 @@ def get_jobs(db: Session = Depends(get_db)):
 
 @app.get("/get_all_question")
 def get_question_from_db(job_id: int, db: Session = Depends(get_db)):
-    questions = db.query(Questions).filter_by(Questions.job_id == job_id).all()
-    questions = [{"qid":question.qid,
-                  "question":question.question,
-                  "criteria": question.criteria} 
-                  for question in questions]
-    return questions
+
+    questions = db.query(Questions).filter_by(job_id = job_id).all()
+    if questions:
+        questions = [{"qid":question.qid,
+                    "question":question.question,
+                    "job_id": job_id
+                    } 
+                    for question in questions]
+        return {"questions": questions}
+    else:
+        raise Exception("Job not found")
+    
 
 @app.get("/get_question_by_qid")
 def get_question_by_id(job_id: int, qid: int, db: Session = Depends(get_db)):
@@ -162,7 +169,7 @@ async def speech_to_text(websocket: WebSocket):
                     # is_final result. The other results will be for subsequent portions of
                     # the audio.
                     text_list = []
-                    print(response.__dict__)
+                    # print(response.__dict__)
                     for result in response.results:
                         print(f"Finished: {result.is_final}")
                         print(f"Stability: {result.stability}")

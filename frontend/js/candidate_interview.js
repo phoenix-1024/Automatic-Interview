@@ -77,6 +77,31 @@ function toggleSpeechToText() {
     }
 }
 
+// get job_id from query parameter
+const urlParams = new URLSearchParams(window.location.search);
+const job_id = urlParams.get('job_id');
+
+if (job_id == null) {
+    job_id = 1;
+}
+
+let questions 
+
+function get_all_questions(job_id) {
+    fetch('http://localhost:8000/get_all_question')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            questions = data['questions'];
+        }); 
+    
+}
+
+// run after the html is loaded
+window.onload = function() {
+    get_question();
+}
+
 //define socket in a higher scope
 var socket;
 
@@ -118,3 +143,5 @@ if (checkMediaSupport()) {
 } else {
     console.error('Media not supported on this browser.');
 }
+
+

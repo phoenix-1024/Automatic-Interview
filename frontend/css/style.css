@@ -26,6 +26,7 @@ button {
     padding: 10px 20px;
     cursor: pointer;
     text-transform: uppercase;
+    margin: 10px 10;
 }
 
 .delete_button {
@@ -33,15 +34,16 @@ button {
 }
 
 #recButton {
-	width: 35px;
-	height: 35px;
-	font-size: 0;
-	background-color: red;
 	border: 0;
 	border-radius: 35px;
 	margin: 18px;
 	outline: none;
 }
+
+.nextButton{
+    float: right;
+}
+
 
 .not_recording {
     background-color: darkred;
