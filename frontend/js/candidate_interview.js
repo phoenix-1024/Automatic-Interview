@@ -58,6 +58,7 @@ function toggleSpeechToText() {
         socket.send('stop');
         mediaRecorder.stop();
         console.log('MediaRecorder stopped');
+        recording_button.textContent = 'Start Speech to Text';
         recording_button.classList.remove('recording');
         recording_button.classList.add('not_recording');
     } else {
@@ -69,6 +70,7 @@ function toggleSpeechToText() {
             // send data to the server every 500ms
             mediaRecorder.start(500);
             console.log('MediaRecorder started');
+            recording_button.textContent = 'Stop Speech to Text';
             recording_button.classList.remove('not_recording');
             recording_button.classList.add('recording');
         } else {
@@ -77,29 +79,72 @@ function toggleSpeechToText() {
     }
 }
 
-// get job_id from query parameter
-const urlParams = new URLSearchParams(window.location.search);
-const job_id = urlParams.get('job_id');
 
-if (job_id == null) {
-    job_id = 1;
+
+let Questions = class {
+    constructor() {
+        this.questions = [];
+        this.current_question = 0;
+    }
+
+    set_questions(questions) {
+        
+        console.log(`questions set ${questions}`);
+        this.questions = questions;
+    }
+
+    get_current_question() {
+        console.log(this.questions);
+        console.log(this.questions[this.current_question]);
+        return this.questions[this.current_question];
+    }
+
+    get_next_question() {
+        if (this.current_question >= this.questions.length) {
+            return null;
+        } else {
+            this.current_question += 1;
+        }
+        return this.questions[this.current_question];
+    }
+
+    get_prev_question() {
+        if (this.current_question <= 0) {
+            return null;
+        } else {
+            this.current_question -= 1;
+        }
+        return this.questions[this.current_question];
+    }
+
 }
 
-let questions 
+let questionsInstance = new Questions();
+
 
 function get_all_questions(job_id) {
-    fetch('http://localhost:8000/get_all_question')
+    fetch('http://localhost:8000/get_all_question?job_id=' + job_id)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
-            questions = data['questions'];
-        }); 
-    
+            questionsInstance.set_questions(data['questions']);
+            display_question(questionsInstance.get_current_question())
+        })
+}
+
+function display_question(question) {
+    document.getElementById('question').innerHTML = question['question'];
 }
 
 // run after the html is loaded
 window.onload = function() {
-    get_question();
+    // get job_id from query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const job_id = urlParams.get('job_id');
+
+    if (job_id == null) {
+        alert('job_id is required');
+    }
+    get_all_questions(job_id);
 }
 
 //define socket in a higher scope

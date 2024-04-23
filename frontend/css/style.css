@@ -49,10 +49,17 @@ button {
     background-color: darkred;
 }
 
+.not_recording:hover {
+    background-color: red;
+}
+
 .recording {
     background-color: green;
 }
 
+.recording:hover {
+    background-color: darkgreen;
+}
 
 button:disabled {
     background-color: #666;
@@ -60,7 +67,7 @@ button:disabled {
 }
 
 button:hover {
-    background-color: #666;
+    background-color: #444;
 }
 
 #questions {
