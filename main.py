@@ -12,11 +12,15 @@ from src.q_and_a.QA import make_questions_form_jd
 from api_input_schema import jd_input, questions_input
 from database import get_db, Questions, Job
 # from src.speach_to_text.my_s2t import My_Transcriber, websocketStream
-from src.speach_to_text.transcribe_streaming import start_transcribing
+# from src.speach_to_text.transcribe_streaming import start_transcribing
+from src.rev_ai.async_streamingclient import RevAiAsyncStreamingClient
+from rev_ai import MediaConfig
 import os
 import asyncio
-from google.cloud import speech_v1, speech
-from google.api_core.exceptions import OutOfRange
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # from frontend_router import router
 
 app = FastAPI()
@@ -154,7 +158,11 @@ async def my_web_socket_itrator(websocket: WebSocket):
 @app.websocket("/speech_to_text")
 async def speech_to_text(websocket: WebSocket):
     await websocket.accept()
-
+    config = MediaConfig(content_type="audio/opus",layout="interleaved",rate=48000)
+    rev_stt = RevAiAsyncStreamingClient(
+        access_token=os.environ.get("REVAI_ACCESS_TOKEN"),
+        config=config
+    )
     print("connected")
     try:
          
@@ -163,24 +171,17 @@ async def speech_to_text(websocket: WebSocket):
             # signal_data = await websocket.receive()
             if 'text' in signal_data.keys() and  signal_data['text'] == "start":
                 print("starting speech to text")
-                stream = await start_transcribing(my_web_socket_itrator(websocket))
+                stream = await rev_stt.start(my_web_socket_itrator(websocket))
                 async for response in stream:
-                    # Once the transcription has settled, the first result will contain the
-                    # is_final result. The other results will be for subsequent portions of
-                    # the audio.
-                    text_list = []
-                    # print(response.__dict__)
-                    for result in response.results:
-                        print(f"Finished: {result.is_final}")
-                        print(f"Stability: {result.stability}")
-                        alternatives = result.alternatives
-                        # The alternatives are ordered from most likely to least.
-                        for alternative in alternatives:
-                            print(f"Confidence: {alternative.confidence}")
-                            print(f"Transcript: {alternative.transcript}")
-                            text_list.append(alternative.transcript)
-
-                    await websocket.send_text(" ".join(text_list))
+                    
+                    text = ''
+                    
+                    if response['type'] == 'final':
+                        for element in response['elements']:
+                            text += element['value']
+                        print(response)
+                        await websocket.send_text(text + " ")
+                    
     except Exception as e:
         print("Error in speech_to_text: " + str(e),type(e))
         print("disconnected")

@@ -1,7 +1,7 @@
 import re
 import ast
 import json
-from ..gemini.model import model
+from ..llama_3.model import model
 
 def judge_answer(q,a,c):
   response = model.generate_content(f"""
@@ -119,8 +119,11 @@ def make_questions_form_jd(jd: str):
   questions and criteria should be text only.
   """,temperature=0.75)
   # Extract the JSON part from the string
-  json_str = re.search(r'```json\n(.*)\n```', questions, re.DOTALL)[1]
-
+  try:
+    json_str = re.search(r'```(?:json\n)?(.*)\n```', questions, re.DOTALL)[1]
+  except Exception as e:
+    print(questions)
+    raise e
   # Parse the JSON string into a Python dictionary
   data = json.loads(json_str)
 
