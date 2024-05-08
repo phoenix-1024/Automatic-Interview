@@ -84,6 +84,13 @@ button:hover {
 }
 
 .back_next {
-    display: inline-flex
+    display: flex;
+    justify-content: space-between;
 }
 
+.detail {
+    background-color: #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}

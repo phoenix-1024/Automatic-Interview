@@ -1,6 +1,7 @@
 
-# enviornment variables like api kye and such
+# enviornment variables like api key and such
 .env
+*.key
 
 # python cache
 __pycache__/
@@ -23,3 +24,8 @@ research/
 
 # audio files
 temp/
+
+# 
+.ipynb_checkpoints/
+launch_jupyter.sh
+.virtual_documents/

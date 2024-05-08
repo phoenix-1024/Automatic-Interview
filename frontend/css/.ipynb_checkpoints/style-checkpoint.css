@@ -84,6 +84,7 @@ button:hover {
 }
 
 .back_next {
-    display: inline-flex
+    display: flex;
+    justify-content: space-between;
 }
 

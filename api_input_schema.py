@@ -8,3 +8,7 @@ class questions_input(BaseModel):
     job_title: str
     job_discription: str
     questions: list
+
+class answers_input(BaseModel):
+    answers : list
+    

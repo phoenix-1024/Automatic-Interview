@@ -89,34 +89,63 @@ let Questions = class {
 
     set_questions(questions) {
         
-        console.log(`questions set ${questions}`);
+        // console.log(`questions set ${questions}`);
         this.questions = questions;
     }
 
     get_current_question() {
-        console.log(this.questions);
-        console.log(this.questions[this.current_question]);
+        // console.log(this.questions);
+        // console.log(this.questions[this.current_question]);
         return this.questions[this.current_question];
     }
 
-    get_next_question() {
-        if (this.current_question >= this.questions.length) {
-            return null;
+    get_current_answer() {
+        if (this.questions[this.current_question]['answer']) {
+            return this.questions[this.current_question]['answer']
         } else {
-            this.current_question += 1;
+            return ''
         }
-        return this.questions[this.current_question];
+    }
+
+    check_next() {
+        if (this.current_question >= this.questions.length - 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    check_prev() {
+        if (this.current_question <= 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    get_next_question() {
+        if (this.check_next()) {
+            this.current_question += 1;
+            return this.questions[this.current_question];
+        } else {
+            return null
+        }
     }
 
     get_prev_question() {
-        if (this.current_question <= 0) {
-            return null;
-        } else {
+        if (this.check_prev()) {
             this.current_question -= 1;
+            return this.questions[this.current_question];
+        } else {
+            return null
         }
-        return this.questions[this.current_question];
     }
 
+    save_answer(answer) {
+        this.questions[this.current_question]['answer'] = answer
+        // console.log(this.questions[this.current_question])
+    }
+    
 }
 
 let questionsInstance = new Questions();
@@ -134,6 +163,75 @@ function get_all_questions(job_id) {
 function display_question(question) {
     document.getElementById('question').innerHTML = question['question'];
 }
+
+function display_answer(answer) {
+    document.getElementById('answer').value = answer
+}
+
+function save_answer() {
+    answer = document.getElementById('answer').value;
+    questionsInstance.save_answer(answer);
+}
+
+function handel_next_prev() {
+    if (questionsInstance.check_prev()) {
+        document.getElementById("previous").disabled = false;
+    } else {
+        document.getElementById("previous").disabled = true;
+    }
+    
+    if (questionsInstance.check_next()) {
+        document.getElementById("next").textContent = 'Next Question >>> ';
+    } else {
+        // console.log("last question")
+        document.getElementById("next").textContent = 'SUBMIT';
+    }
+}
+
+
+function prev() {
+    save_answer();
+    
+    next_question = questionsInstance.get_prev_question();
+    display_question(next_question);
+    
+    answer = questionsInstance.get_current_answer();
+    display_answer(answer);
+
+    handel_next_prev();
+}
+
+function submit() {
+    console.log(JSON.stringify({ questions: questionsInstance.questions} ))
+    fetch('http://localhost:8000/submit_answers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answers: questionsInstance.questions} )
+    })
+    // go to results page
+    window.location.href = 'http://localhost:8000/static/results.html';
+    
+}
+
+function next() {
+    save_answer();
+
+    if (questionsInstance.check_next()){
+        next_question = questionsInstance.get_next_question();
+        display_question(next_question);
+        
+        answer = questionsInstance.get_current_answer();
+        display_answer(answer);
+    
+        handel_next_prev();
+    } else {
+        submit()
+    }
+}
+
+
 
 // run after the html is loaded
 window.onload = function() {

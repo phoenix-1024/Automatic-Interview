@@ -3,8 +3,8 @@ import ast
 import json
 from ..llama_3.model import model
 
-def judge_answer(q,a,c):
-  response = model.generate_content(f"""
+async def judge_answer(q,a,c):
+  response = await model.generate_content(f"""
   you are a teaching assistent ai who will help students correct their answers.
 
   for a given question, criteria and student answer tell the student what they did correct and where they have to improve their understanding of the subject.
@@ -34,10 +34,10 @@ def judge_answer(q,a,c):
   do not repeate the inputs in your response
 
   """)
-  return response.text
+  return response
 
-def refine_question_wrt_criteria(question,criteria):
-  response = model.generate_content(f"""
+async def refine_question_wrt_criteria(question,criteria):
+  response = await model.generate_content(f"""
   You are a model student with best grades.
   Answer the following question. try to be consise and presise.
   question:{question}
@@ -46,14 +46,14 @@ def refine_question_wrt_criteria(question,criteria):
   """
   )
   # display(Markdown(response.text))
-  model_answer = response.text
+  model_answer = response
   judjement = judge_answer(question,model_answer,criteria)
   # display(Markdown(judjement))
 
 
   #  The assessment model determines if the student has been unfairly penalized due to omission of requirements (or a lack of clarity) in the original question text
 
-  response = model.generate_content(f'''
+  response = await model.generate_content(f'''
   You are a AI teaching assistent.
   for a given question, answer, evaluation criteria and evaluation.
   determine if the student has been unfairly penalized due to omission of requirements (or a lack of clarity) in the original question text.
@@ -73,9 +73,9 @@ def refine_question_wrt_criteria(question,criteria):
   '''
   )
 
-  is_fair = re.search(r"student is being (fairly|unfairly) judged\.",response.text)
+  is_fair = re.search(r"student is being (fairly|unfairly) judged\.",response)
   if is_fair is not None and is_fair[1].lower() == "unfairly":
-      response = model.generate_content(f'''
+      response = await model.generate_content(f'''
       you are a teaching assistent AI.
       a question is evaluated based on the grading criteria.
       students are getting unfairly penalized due to omission of requirements (or a lack of clarity) in the original question text.
@@ -90,14 +90,14 @@ def refine_question_wrt_criteria(question,criteria):
       {{"alternative questions": ["question 1","question 2",...]}}
       ''')
 
-      return ast.literal_eval(response.text)
+      return ast.literal_eval(response)
   else:
       return {
         "alternative questions": []
       }
 
-def make_questions_form_jd(jd: str):
-  questions = model.generate_content(f"""
+async def make_questions_form_jd(jd: str):
+  questions = await model.generate_content(f"""
   You are a AI recrutering assistent. Given the following Job discription generate a list of questions that an interviewer should ask the candidate.
   Along with questions, provide the grading criteria for each question. ensure that the grading criteria is clear and unambiguous.
   eg. 
@@ -128,4 +128,40 @@ def make_questions_form_jd(jd: str):
   data = json.loads(json_str)
 
   # print(data)
+  return data
+
+
+async def judge_interview_answer(qid, question, answer, cretria,**kargs):
+  response = await model.generate_content(f"""
+  you are an Interviewer ai who will help check a candidate's response. 
+
+  for a given question, criteria and student answer evaluate a candidate's response and give a score from 1 to 5.
+  Give a detailed summary of how you evaluated the candidate's answer.
+
+  input:
+  ```
+  question: {question}
+  criteria: {cretria}
+  candidates answer: {answer}
+
+  output format
+  ```
+  {{
+      "score": int,
+      "summary": str
+  }}    
+  ```
+  
+  """)
+  try:
+    json_str = re.search(r'```(?:json\n)?(.*)\n```', response, re.DOTALL)[1]
+  except Exception as e:
+    print(response)
+    raise e
+  # Parse the JSON string into a Python dictionary
+  data = json.loads(json_str)
+  data['qid'] = qid
+  data['question'] = question
+  data['answer'] = answer
+  data['cretria'] = cretria
   return data

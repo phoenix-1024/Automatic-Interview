@@ -8,11 +8,15 @@
         ii. api --done
         iii.db setup --done
 3. chat interview
-    a. UI select job page
-    a. UI chat
-    b. Backend api
-4. Add speech to text inside ui for chat interview
-5. testing and stuff
+    a. UI select job page --done
+    b. Backend api --done
+    b. ~~save answers for user by user name~~
+    c. display results page --done first draft done edgecases pending :(
+    
+4. Add speech to text inside ui for chat interview --done
+5. testing and stuff --???
+6. Switch to async api for open ai --done
+7. 
 
 
 other features like q and a using document and such will come later

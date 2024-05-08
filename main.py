@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, WebSocket
+from fastapi import FastAPI, Depends, WebSocket, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
 # from functools import lru_cache
@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 import time
 
-from src.q_and_a.QA import make_questions_form_jd
-from api_input_schema import jd_input, questions_input
-from database import get_db, Questions, Job
+from src.q_and_a.QA import make_questions_form_jd, judge_answer, judge_interview_answer
+from api_input_schema import jd_input, questions_input, answers_input
+from database import get_db, Questions, Job, Results, Session
 # from src.speach_to_text.my_s2t import My_Transcriber, websocketStream
 # from src.speach_to_text.transcribe_streaming import start_transcribing
 from src.rev_ai.async_streamingclient import RevAiAsyncStreamingClient
@@ -24,6 +24,8 @@ load_dotenv()
 # from frontend_router import router
 
 app = FastAPI()
+RUNNING = 'RUNNING'
+COMPLETED = 'COMPLETED'
 
 origins = [
     "http://localhost",
@@ -59,9 +61,9 @@ async def read_root():
 
 
 @app.post("/generate_questions")
-def generate_questions(jd: jd_input):
+async def generate_questions(jd: jd_input):
 
-    return make_questions_form_jd(jd.job_discription)
+    return await make_questions_form_jd(jd.job_discription)
 
 
 @app.post("/save_job")
@@ -93,6 +95,12 @@ def delete_job(job_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
     db.delete(job)
     db.commit()
+    tables = [Questions, Results]
+    for table in tables:
+        entries = db.query(table).filter(table.job_id == job_id).all()
+        for entri in entries:
+            db.delete(entri)
+            db.commit()
     return {"status": "success"}
 
 
@@ -122,7 +130,81 @@ def get_question_from_db(job_id: int, db: Session = Depends(get_db)):
         return {"questions": questions}
     else:
         raise Exception("Job not found")
+
+@app.post("/submit_answers")
+async def submit_answers(
+        answers: answers_input, 
+        b : BackgroundTasks
+        ):
+    db = Session()
+    data_dict_list = answers.answers
+    job_id = data_dict_list[0]['job_id']
+
+    questions = db.query(Questions).filter_by(job_id = job_id).all()
+    cretrias = {
+        question.qid: question.criteria
+        for question in questions
+    }
+
+    for data_dict in data_dict_list:
+        data_dict['cretria'] = cretrias[data_dict['qid']]
+    r = Results(job_id = job_id,status = RUNNING)
+    db.add(r)
+    db.commit()
+    # asyncio.create_task(evaluation_task(data_dict_list,r,db))
+    b.add_task(evaluation_task,data_dict_list,r,db)
+    return {"message": "success"}
+
+
+@app.get("/get_all_results")
+def get_all_results(
+    db: Session = Depends(get_db)):
+    results = db.query(Results,Job).filter(Results.job_id == Job.job_id).all()
+    response = [{
+                'rid':result.Results.rid, 
+                'job_id':result.Results.job_id, 
+                'job_name':result.Job.job_title,
+                'status':result.Results.status,
+                }
+                for result in results]
+
+    return { "results" : response }
+
+@app.get("/get_results_by_id")
+def get_result_by_id(
+    rid: str,
+    db: Session = Depends(get_db)):
+    result = db.query(Results).filter_by(rid = rid).first()
+    response = {
+                'rid':result.rid, 
+                'job_id':result.job_id, 
+                'result': result.result,
+                'status':result.status,
+                }
+    return response
+
+async def evaluation_task(data_dict_list,r,db):
     
+    # Run fun in parallel for each set of inputs
+    tasks = [
+        judge_interview_answer(
+            **data_dict
+        ) 
+        for data_dict in data_dict_list
+    ]
+    # Gather the results
+    results = await asyncio.gather(*tasks)
+    evaluation_result = {}
+    evaluation_result['results'] = results
+    evaluation_result['avg_score'] = sum([result['score'] for result in results])/len(results)
+    # print(evaluation_result)
+    
+    r.result = evaluation_result
+    r.status = COMPLETED
+    db.commit()
+    db.close()
+    print("should be updated now.")
+
 
 @app.get("/get_question_by_qid")
 def get_question_by_id(job_id: int, qid: int, db: Session = Depends(get_db)):
